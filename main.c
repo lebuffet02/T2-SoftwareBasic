@@ -38,6 +38,9 @@ void uploadTexture();
 void seamcarve(int targetWidth); // executa o algoritmo
 void freemem();                  // limpa memória (caso tenha alocado dinamicamente)
 
+void energia(Img *source, int width, int height);
+
+
 // Funções da interface gráfica e OpenGL
 void init();
 void draw();
@@ -54,6 +57,7 @@ int targetW;
 GLuint tex[3];
 
 // As 3 imagens
+// pic[0] é o *source, pic[1] é o *mask e pic[2] é o *target
 Img pic[3];
 Img *source;
 Img *mask;
@@ -77,6 +81,39 @@ void load(char *name, Img *pic)
 
 //
 // Implemente AQUI o seu algoritmo
+
+void energia(Img *source, int width, int height) {
+
+    RGB8 *img, aux, energia;
+    
+
+    for(int i = 0; i < width * height; i++) {
+        for(int j= 0; j < width * height; i++) {
+
+           source->img[i] = . . . ;
+           source->img[j] = . . . ;
+
+            aux = source->img[width * source->width + height];
+
+            img->r =  //bla bla  ;
+            img->g =  //bla bla  ;
+            img->b =  //bla bla  ;
+
+
+         //energia = source->img, source->width, source->height;
+         
+         // PARA ACESSAR OS 2 PRIMEIROS PIXELS DA IMAGEM
+         //RGB8* aux1 = source->img[0];
+         //RGB8* aux2 = source->img[1];
+
+         //SOURCE->WIDTH SÃO AS COLUNAS
+         //SOURCE->HEIGHT SÃO AS LINHAS
+         
+        }
+    }
+} 
+
+
 void seamcarve(int targetWidth)
 {
     // Aplica o algoritmo e gera a saida em target->img...
