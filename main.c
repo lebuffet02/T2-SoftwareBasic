@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // Para usar strings
@@ -23,6 +24,7 @@
 typedef struct
 {
     unsigned char r, g, b;
+    float energia;
 } RGB8;
 
 // Uma imagem RGB
@@ -39,7 +41,7 @@ void seamcarve(int targetWidth); // executa o algoritmo
 void freemem();                  // limpa memória (caso tenha alocado dinamicamente)
 
 void energia(Img *source, int width, int height);
-
+void energia2();
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -82,37 +84,93 @@ void load(char *name, Img *pic)
 //
 // Implemente AQUI o seu algoritmo
 
-void energia(Img *source, int width, int height) {
+void energia(Img *source, int width, int height)
+{
 
     RGB8 *img, aux, energia;
-    
 
-    for(int i = 0; i < width * height; i++) {
-        for(int j= 0; j < width * height; i++) {
+    for (int i = 0; i < width * height; i++)
+    {
+        for (int j = 0; j < width * height; i++)
+        {
 
-           source->img[i] = . . . ;
-           source->img[j] = . . . ;
+            source->img[i] = ...;
+            source->img[j] = ...;
 
             aux = source->img[width * source->width + height];
 
-            img->r =  //bla bla  ;
-            img->g =  //bla bla  ;
-            img->b =  //bla bla  ;
+            img->r =     //bla bla  ;
+                img->g = //bla bla  ;
+                img->b = //bla bla  ;
 
+            //energia = source->img, source->width, source->height;
 
-         //energia = source->img, source->width, source->height;
-         
-         // PARA ACESSAR OS 2 PRIMEIROS PIXELS DA IMAGEM
-         //RGB8* aux1 = source->img[0];
-         //RGB8* aux2 = source->img[1];
+            // PARA ACESSAR OS 2 PRIMEIROS PIXELS DA IMAGEM
+            //RGB8* aux1 = source->img[0];
+            //RGB8* aux2 = source->img[1];
 
-         //SOURCE->WIDTH SÃO AS COLUNAS
-         //SOURCE->HEIGHT SÃO AS LINHAS
-         
+            //SOURCE->WIDTH SÃO AS COLUNAS
+            //SOURCE->HEIGHT SÃO AS LINHAS
         }
     }
-} 
+}
 
+void energia2()
+{
+    for (int i = 0; i < width * height; i++)
+    {
+        int deltaX;
+        int deltaY;
+
+        if (i == 0 || i % width == 0)
+        {
+            //calcula borda esquerda 
+            int deltaRx = source->img[i + 1].r - source->img[i + 2].r;
+            int deltaGx = source->img[i + 1].g - source->img[i + 2].g;
+            int deltaBx = source->img[i + 1].b - source->img[i + 2].b;
+            deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
+        }
+        else if ((i + 1) % width == 0)
+        {
+            //calcula borda direita
+            int deltaRx = source->img[i - 1].r - source->img[i - 2].r;
+            int deltaGx = source->img[i - 1].g - source->img[i - 2].g;
+            int deltaBx = source->img[i - 1].b - source->img[i - 2].b;
+            deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
+        }
+        else
+        {
+            int deltaRx = source->img[i + 1].r - source->img[i - 1].r;
+            int deltaGx = source->img[i + 1].g - source->img[i - 1].g;
+            int deltaBx = source->img[i + 1].b - source->img[i - 1].b;
+            deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
+        }
+
+        if (i / width < 1)
+        {
+            //calcula borda superior
+            int deltaRy = source->img[i - width].r - source->img[i - width * 2].r;
+            int deltaGy = source->img[i - width].g - source->img[i - width * 2].g;
+            int deltaBy = source->img[i - width].b - source->img[i - width * 2].b;
+        }
+        else if (i / width == height)
+        {
+            //calcula borda inferior
+            int deltaRy = source->img[i + width].r - source->img[i + width * 2].r;
+            int deltaGy = source->img[i + width].g - source->img[i + width * 2].g;
+            int deltaBy = source->img[i + width].b - source->img[i + width * 2].b;
+        }
+        else
+        {
+            int deltaRy = source->img[i - width].r - source->img[i + width].r;
+            int deltaGy = source->img[i - width].g - source->img[i + width].g;
+            int deltaBy = source->img[i - width].b - source->img[i + width].b;
+            deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
+        }
+
+        source->img[i].energia = deltaX + deltaY;
+    }
+}
 
 void seamcarve(int targetWidth)
 {
