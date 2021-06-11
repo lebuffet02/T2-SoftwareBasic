@@ -84,39 +84,41 @@ void load(char *name, Img *pic)
 //
 // Implemente AQUI o seu algoritmo
 
-void energia(Img *source, int width, int height)
-{
+// void energia(Img *source, int width, int height)
+// {
 
-    RGB8 *img, aux, energia;
+//     RGB8 *img, aux, energia;
 
-    for (int i = 0; i < width * height; i++)
-    {
-        for (int j = 0; j < width * height; i++)
-        {
+//     for (int i = 0; i < width * height; i++)
+//     {
+//         for (int j = 0; j < width * height; i++)
+//         {
 
-            source->img[i] = ...;
-            source->img[j] = ...;
+//             source->img[i] = ...;
+//             source->img[j] = ...;
 
-            aux = source->img[width * source->width + height];
+//             aux = source->img[width * source->width + height];
 
-            img->r =     //bla bla  ;
-                img->g = //bla bla  ;
-                img->b = //bla bla  ;
+//             img->r =     //bla bla  ;
+//                 img->g = //bla bla  ;
+//                 img->b = //bla bla  ;
 
-            //energia = source->img, source->width, source->height;
+//             //energia = source->img, source->width, source->height;
 
-            // PARA ACESSAR OS 2 PRIMEIROS PIXELS DA IMAGEM
-            //RGB8* aux1 = source->img[0];
-            //RGB8* aux2 = source->img[1];
+//             // PARA ACESSAR OS 2 PRIMEIROS PIXELS DA IMAGEM
+//             //RGB8* aux1 = source->img[0];
+//             //RGB8* aux2 = source->img[1];
 
-            //SOURCE->WIDTH SÃO AS COLUNAS
-            //SOURCE->HEIGHT SÃO AS LINHAS
-        }
-    }
-}
+//             //SOURCE->WIDTH SÃO AS COLUNAS
+//             //SOURCE->HEIGHT SÃO AS LINHAS
+//         }
+//     }
+// }
 
 void energia2()
 {
+    Img img = source[0];
+
     for (int i = 0; i < width * height; i++)
     {
         int deltaX;
@@ -175,6 +177,8 @@ void energia2()
 void seamcarve(int targetWidth)
 {
     // Aplica o algoritmo e gera a saida em target->img...
+
+    energia2();
 
     RGB8(*ptr)
     [target->width] = (RGB8(*)[target->width])target->img;
