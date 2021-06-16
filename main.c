@@ -40,7 +40,6 @@ void uploadTexture();
 void seamcarve(int targetWidth); // executa o algoritmo
 void freemem();                  // limpa memória (caso tenha alocado dinamicamente)
 
-void energia(Img *source, int width, int height);
 void energia2();
 
 // Funções da interface gráfica e OpenGL
@@ -84,36 +83,45 @@ void load(char *name, Img *pic)
 //
 // Implemente AQUI o seu algoritmo
 
-// void energia(Img *source, int width, int height)
-// {
+ void energiaAcumulada() {
 
-//     RGB8 *img, aux, energia;
+     Img img = source[0];
 
-//     for (int i = 0; i < width * height; i++)
-//     {
-//         for (int j = 0; j < width * height; i++)
-//         {
+     for (int i = 0; i < width * height; i++) {
 
-//             source->img[i] = ...;
-//             source->img[j] = ...;
+         float somaR, somaG, somaB, somaTotal;
 
-//             aux = source->img[width * source->width + height];
+            float deltaR = source->img[0].r + source->img[i + 1].r;
+            float deltaG = source->img[0].g + source->img[i + 1].g;
+            float deltaB = source->img[0].g + source->img[i + 1].b;
+           
+            somaR = source->img[0].r + source->img[i + 2].r;
+            somaG = source->img[0].r + source->img[i + 2].g;
+            somaB = source->img[0].r + source->img[i + 2].b;
 
-//             img->r =     //bla bla  ;
-//                 img->g = //bla bla  ;
-//                 img->b = //bla bla  ;
+        //calcula borda esquerda
+        if(source->img[0].r == source->img[i + 2].r || source->img[0].g == source->img[i + 2].g
+        || source->img[0].b == source->img[i + 2].b) {
+           
+            break;
+            exit(1);
+        }
+        else if(source->img[0].r > source->img[i + 2].r || source->img[0].g > source->img[i + 2].g
+        || source->img[0].b > source->img[i + 2].b) {
 
-//             //energia = source->img, source->width, source->height;
+            somaTotal = (source->img[0].r) + (source->img[0].g) + (source->img[0].b);
+        }
+        else if(source->img[0].r < source->img[i + 2].r || source->img[0].g < source->img[i + 2].g
+        || source->img[0].b < source->img[i + 2].b) {
 
-//             // PARA ACESSAR OS 2 PRIMEIROS PIXELS DA IMAGEM
-//             //RGB8* aux1 = source->img[0];
-//             //RGB8* aux2 = source->img[1];
+            somaTotal = (source->img[i + 2].r) + (source->img[i + 2].g) + (source->img[i + 2].b);
+        }
 
-//             //SOURCE->WIDTH SÃO AS COLUNAS
-//             //SOURCE->HEIGHT SÃO AS LINHAS
-//         }
-//     }
-// }
+        //calcula borda direita
+
+        source->img[i].energia = somaTotal;
+     }
+ }
 
 void energia2()
 {
@@ -179,6 +187,7 @@ void seamcarve(int targetWidth)
     // Aplica o algoritmo e gera a saida em target->img...
 
     energia2();
+    energiaAcumulada();
 
     RGB8(*ptr)
     [target->width] = (RGB8(*)[target->width])target->img;
