@@ -25,6 +25,7 @@ typedef struct
 {
     unsigned char r, g, b;
     float energia;
+    float energiaAcumulada;
 } RGB8;
 
 // Uma imagem RGB
@@ -83,102 +84,172 @@ void load(char *name, Img *pic)
 //
 // Implemente AQUI o seu algoritmo
 
- void energiaAcumulada() {
+//  void energiaAcumulada() {
 
-     Img img = source[0];
+//      Img img = source[0];
 
-     for (int i = 0; i < width * height; i++) {
+//      for (int i = 0; i < width * height; i++) {
 
-         float somaR, somaG, somaB, somaTotal;
+//          float somaR, somaG, somaB, somaTotal;
 
-            float deltaR = source->img[0].r + source->img[i + 1].r;
-            float deltaG = source->img[0].g + source->img[i + 1].g;
-            float deltaB = source->img[0].g + source->img[i + 1].b;
-           
-            somaR = source->img[0].r + source->img[i + 2].r;
-            somaG = source->img[0].r + source->img[i + 2].g;
-            somaB = source->img[0].r + source->img[i + 2].b;
+//             float deltaR = source->img[0].r + source->img[i + 1].r;
+//             float deltaG = source->img[0].g + source->img[i + 1].g;
+//             float deltaB = source->img[0].g + source->img[i + 1].b;
 
-        //calcula borda esquerda
-        if(source->img[0].r == source->img[i + 2].r || source->img[0].g == source->img[i + 2].g
-        || source->img[0].b == source->img[i + 2].b) {
-           
-            break;
-            exit(1);
+//             somaR = source->img[0].r + source->img[i + 2].r;
+//             somaG = source->img[0].g + source->img[i + 2].g;
+//             somaB = source->img[0].b + source->img[i + 2].b;
+
+//         //calcula borda esquerda
+//         if(source->img[0].r == source->img[i + 2].r || source->img[0].g == source->img[i + 2].g
+//         || source->img[0].b == source->img[i + 2].b) {
+
+//             break;
+//             exit(1);
+//         }
+//         else if(source->img[0].r > source->img[i + 2].r || source->img[0].g > source->img[i + 2].g
+//         || source->img[0].b > source->img[i + 2].b) {
+
+//             somaTotal = (source->img[0].r) + (source->img[0].g) + (source->img[0].b);
+//         }
+//         else if(source->img[0].r < source->img[i + 2].r || source->img[0].g < source->img[i + 2].g
+//         || source->img[0].b < source->img[i + 2].b) {
+
+//             somaTotal = (source->img[i + 2].r) + (source->img[i + 2].g) + (source->img[i + 2].b);
+//         }
+
+//         //calcula borda direita
+
+//         source->img[i].energia = somaTotal;
+//      }
+//  }
+
+void energiaAcumulada()
+{
+
+    RGB8(*ptr)
+    [source->width] = (RGB8(*)[source->width])source->img;
+
+    RGB8 anterior;
+    RGB8 atual;
+    int coodernadaY;
+    int coodernadaX;
+    for (int i = 0; i < source->width; i++)
+    {
+        float soma = 0;
+        coodernadaY = 0;
+        coodernadaX = i;
+        ptr[coodernadaY][coodernadaX].energiaAcumulada = ptr[coodernadaY][coodernadaX].energia;
+
+        atual = ptr[coodernadaY][coodernadaX];
+        while (coodernadaY < source->height)
+        {
+            RGB8 menorCusto = ptr[coodernadaY + 1][coodernadaX];
+
+            RGB8 pixelDireitaInferior;
+            RGB8 pixelEsquerdaInferior;
+
+            if (coodernadaX > 0 && menorCusto.energia > ptr[coodernadaY + 1][coodernadaX - 1].energia)
+            {
+                pixelEsquerdaInferior = ptr[coodernadaY + 1][i - 1];
+                // menorCusto = ptr[coodernadaY + 1][i - 1];
+            }
+
+            if (coodernadaX < source->width - 1 && menorCusto.energia > ptr[coodernadaY + 1][coodernadaX + 1].energia)
+            {
+                pixelDireitaInferior = ptr[coodernadaY + 1][coodernadaX + 1];
+                // menorCusto = ptr[coodernadaY + 1][coodernadaX + 1];
+            }
+
+            if (menorCusto.energia > pixelDireitaInferior.energia && pixelDireitaInferior.energia < pixelEsquerdaInferior.energia)
+            {
+                menorCusto = pixelDireitaInferior;
+                coodernadaX++;
+            }
+            else if (menorCusto.energia > pixelEsquerdaInferior.energia)
+            {
+                menorCusto = pixelEsquerdaInferior;
+                coodernadaX--;
+            }
+
+            menorCusto.energiaAcumulada = menorCusto.energia + ptr[coodernadaY][coodernadaX].energiaAcumulada;
+
+            atual = menorCusto;
+            coodernadaY++;
         }
-        else if(source->img[0].r > source->img[i + 2].r || source->img[0].g > source->img[i + 2].g
-        || source->img[0].b > source->img[i + 2].b) {
-
-            somaTotal = (source->img[0].r) + (source->img[0].g) + (source->img[0].b);
-        }
-        else if(source->img[0].r < source->img[i + 2].r || source->img[0].g < source->img[i + 2].g
-        || source->img[0].b < source->img[i + 2].b) {
-
-            somaTotal = (source->img[i + 2].r) + (source->img[i + 2].g) + (source->img[i + 2].b);
-        }
-
-        //calcula borda direita
-
-        source->img[i].energia = somaTotal;
-     }
- }
+    }
+}
 
 void energia2()
 {
-    Img img = source[0];
+    RGB8(*ptr)
+    [source->width] = (RGB8(*)[source->width])source->img;
 
-    for (int i = 0; i < width * height; i++)
+    for (int y = 0; y < source->height; y++)
     {
         int deltaX;
         int deltaY;
 
-        if (i == 0 || i % width == 0)
-        {
-            //calcula borda esquerda 
-            int deltaRx = source->img[i + 1].r - source->img[i + 2].r;
-            int deltaGx = source->img[i + 1].g - source->img[i + 2].g;
-            int deltaBx = source->img[i + 1].b - source->img[i + 2].b;
-            deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
-        }
-        else if ((i + 1) % width == 0)
-        {
-            //calcula borda direita
-            int deltaRx = source->img[i - 1].r - source->img[i - 2].r;
-            int deltaGx = source->img[i - 1].g - source->img[i - 2].g;
-            int deltaBx = source->img[i - 1].b - source->img[i - 2].b;
-            deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
-        }
-        else
-        {
-            int deltaRx = source->img[i + 1].r - source->img[i - 1].r;
-            int deltaGx = source->img[i + 1].g - source->img[i - 1].g;
-            int deltaBx = source->img[i + 1].b - source->img[i - 1].b;
-            deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
-        }
+        boolean isBordaSuperior = y == 0;
+        boolean isBordaInferior = y == source->height - 1;
 
-        if (i / width < 1)
+        for (int x = 0; x < source->width; x++)
         {
-            //calcula borda superior
-            int deltaRy = source->img[i - width].r - source->img[i - width * 2].r;
-            int deltaGy = source->img[i - width].g - source->img[i - width * 2].g;
-            int deltaBy = source->img[i - width].b - source->img[i - width * 2].b;
-        }
-        else if (i / width == height)
-        {
-            //calcula borda inferior
-            int deltaRy = source->img[i + width].r - source->img[i + width * 2].r;
-            int deltaGy = source->img[i + width].g - source->img[i + width * 2].g;
-            int deltaBy = source->img[i + width].b - source->img[i + width * 2].b;
-        }
-        else
-        {
-            int deltaRy = source->img[i - width].r - source->img[i + width].r;
-            int deltaGy = source->img[i - width].g - source->img[i + width].g;
-            int deltaBy = source->img[i - width].b - source->img[i + width].b;
-            deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
-        }
+            boolean isBordaEsquerda = x == 0;
+            boolean isBordaDireita = x == source->width - 1;
 
-        source->img[i].energia = deltaX + deltaY;
+            if (isBordaEsquerda)
+            {
+                //calcula borda esquerda
+                int deltaRx = ptr[y][x + 1].r - ptr[y][x + 2].r;
+                int deltaGx = ptr[y][x + 1].g - ptr[y][x + 2].g;
+                int deltaBx = ptr[y][x + 1].b - ptr[y][x + 2].b;
+                deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
+            }
+            else if (isBordaDireita)
+            {
+                //calcula borda direita
+                int deltaRx = ptr[y][x - 1].r - ptr[y][x - 2].r;
+                int deltaGx = ptr[y][x - 1].g - ptr[y][x - 2].g;
+                int deltaBx = ptr[y][x - 1].b - ptr[y][x - 2].b;
+                deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
+            }
+            else
+            {
+                int deltaRx = ptr[y][x + 1].r - ptr[y][x - 1].r;
+                int deltaGx = ptr[y][x + 1].g - ptr[y][x - 1].g;
+                int deltaBx = ptr[y][x + 1].b - ptr[y][x - 1].b;
+                deltaX = pow(deltaRx, 2) + pow(deltaGx, 2) + pow(deltaBx, 2);
+            }
+
+            if (isBordaSuperior)
+            {
+                //calcula borda superior
+                int deltaRy = ptr[y + 1][x].r - ptr[y + 2][x].r;
+                int deltaGy = ptr[y + 1][x].g - ptr[y + 2][x].g;
+                int deltaBy = ptr[y + 1][x].b - ptr[y + 2][x].b;
+                deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
+            }
+            else if (isBordaInferior)
+            {
+                //calcula borda inferior
+                int deltaRy = ptr[y - 1][x].r - ptr[y - 2][x].r;
+                int deltaGy = ptr[y - 1][x].g - ptr[y - 2][x].g;
+                int deltaBy = ptr[y - 1][x].b - ptr[y - 2][x].b;
+                deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
+            }
+            else
+            {
+                RGB8 pixelAnterior = ptr[y - 1][x];
+                RGB8 pixelPosterior = ptr[y + 1][x];
+                int deltaRy = pixelAnterior.r - pixelPosterior.r;
+                int deltaGy = pixelAnterior.g - pixelPosterior.g;
+                int deltaBy = pixelAnterior.b - pixelPosterior.b;
+                deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
+            }
+
+            ptr[y][x].energia = deltaX + deltaY;
+        }
     }
 }
 
