@@ -24,8 +24,6 @@
 typedef struct
 {
     unsigned char r, g, b;
-    // float energia;
-    // float energiaAcumulada;
 } RGB8;
 
 // Uma imagem RGB
@@ -243,16 +241,13 @@ void energia(long *energias)
             }
             else
             {
-                RGB8 pixelAnterior = ptr[y - 1][x];
-                RGB8 pixelPosterior = ptr[y + 1][x];
-                RGB8 pixelAtual = ptr[y][x];
-                int deltaRy = pixelAnterior.r - pixelPosterior.r;
-                int deltaGy = pixelAnterior.g - pixelPosterior.g;
-                int deltaBy = pixelAnterior.b - pixelPosterior.b;
+                int deltaRy = ptr[y - 1][x].r - ptr[y + 1][x].r;
+                int deltaGy = ptr[y - 1][x].g - ptr[y + 1][x].g;
+                int deltaBy = ptr[y - 1][x].b - ptr[y + 1][x].b;
                 deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
             }
 
-            energias[y * source->width + x ] = deltaX + deltaY;
+            energias[y * source->width + x] = deltaX + deltaY;
         }
     }
 }
@@ -261,7 +256,6 @@ void seamcarve(int targetWidth)
 {
     // Aplica o algoritmo e gera a saida em target->img...
     long energias[source->height * source->width];
-    // memset( energias, 0, source->height*source->width*sizeof(long));
 
     for (int i = 0; i < source->height * source->width; i++)
     {
