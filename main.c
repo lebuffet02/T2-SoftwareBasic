@@ -40,6 +40,7 @@ void seamcarve(int targetWidth); // executa o algoritmo
 void freemem();                  // limpa memória (caso tenha alocado dinamicamente)
 
 void energia(long *energias);
+void energiaAcumulada(long *energias, long *energiasAcumuladas);
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -82,104 +83,41 @@ void load(char *name, Img *pic)
     printf("Load: %d x %d x %d\n", pic->width, pic->height, chan);
 }
 
-//
-// Implemente AQUI o seu algoritmo
+void energiaAcumulada(long *energias, long *energiasAcumuladas)
+{
+    long(*ptrEnergias)
+        [source->width] = (long(*)[source->width])energias;
 
-//  void energiaAcumulada() {
+    for (int x = 0; x < source->width; x++)
+    {
 
-//      Img img = source[0];
+        int coordX = x;
+        int energiaAcumulada = ptrEnergias[0][coordX];
 
-//      for (int i = 0; i < width * height; i++) {
+        for (int y = 0; y < source->height - 1; y++)
+        {
+            int coordXAux = coordX;
+            long menorCusto = ptrEnergias[y + 1][coordX];
 
-//          float somaR, somaG, somaB, somaTotal;
+            if (x > 0 && ptrEnergias[y + 1][coordX - 1] < menorCusto)
+            {
+                menorCusto = ptrEnergias[y + 1][coordX - 1];
+                coordXAux = coordX - 1;
+            }
 
-//             float deltaR = source->img[0].r + source->img[i + 1].r;
-//             float deltaG = source->img[0].g + source->img[i + 1].g;
-//             float deltaB = source->img[0].g + source->img[i + 1].b;
+            if (x < source->width - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
+            {
+                menorCusto = ptrEnergias[y + 1][coordX + 1];
+                coordXAux = coordX + 1;
+            }
 
-//             somaR = source->img[0].r + source->img[i + 2].r;
-//             somaG = source->img[0].g + source->img[i + 2].g;
-//             somaB = source->img[0].b + source->img[i + 2].b;
+            energiaAcumulada += menorCusto;
+            coordX = coordXAux;
+        }
 
-//         //calcula borda esquerda
-//         if(source->img[0].r == source->img[i + 2].r || source->img[0].g == source->img[i + 2].g
-//         || source->img[0].b == source->img[i + 2].b) {
-
-//             break;
-//             exit(1);
-//         }
-//         else if(source->img[0].r > source->img[i + 2].r || source->img[0].g > source->img[i + 2].g
-//         || source->img[0].b > source->img[i + 2].b) {
-
-//             somaTotal = (source->img[0].r) + (source->img[0].g) + (source->img[0].b);
-//         }
-//         else if(source->img[0].r < source->img[i + 2].r || source->img[0].g < source->img[i + 2].g
-//         || source->img[0].b < source->img[i + 2].b) {
-
-//             somaTotal = (source->img[i + 2].r) + (source->img[i + 2].g) + (source->img[i + 2].b);
-//         }
-
-//         //calcula borda direita
-
-//         source->img[i].energia = somaTotal;
-//      }
-//  }
-
-// void energiaAcumulada()
-// {
-
-//     RGB8(*ptr)
-//     [source->width] = (RGB8(*)[source->width])source->img;
-
-//     RGB8 anterior;
-//     RGB8 atual;
-//     int coodernadaY;
-//     int coodernadaX;
-//     for (int i = 0; i < source->width; i++)
-//     {
-//         float soma = 0;
-//         coodernadaY = 0;
-//         coodernadaX = i;
-//         ptr[coodernadaY][coodernadaX].energiaAcumulada = ptr[coodernadaY][coodernadaX].energia;
-
-//         atual = ptr[coodernadaY][coodernadaX];
-//         while (coodernadaY < source->height)
-//         {
-//             RGB8 menorCusto = ptr[coodernadaY + 1][coodernadaX];
-
-//             RGB8 pixelDireitaInferior;
-//             RGB8 pixelEsquerdaInferior;
-
-//             if (coodernadaX > 0 && menorCusto.energia > ptr[coodernadaY + 1][coodernadaX - 1].energia)
-//             {
-//                 pixelEsquerdaInferior = ptr[coodernadaY + 1][i - 1];
-//                 // menorCusto = ptr[coodernadaY + 1][i - 1];
-//             }
-
-//             if (coodernadaX < source->width - 1 && menorCusto.energia > ptr[coodernadaY + 1][coodernadaX + 1].energia)
-//             {
-//                 pixelDireitaInferior = ptr[coodernadaY + 1][coodernadaX + 1];
-//                 // menorCusto = ptr[coodernadaY + 1][coodernadaX + 1];
-//             }
-
-//             if (menorCusto.energia > pixelDireitaInferior.energia && pixelDireitaInferior.energia < pixelEsquerdaInferior.energia)
-//             {
-//                 menorCusto = pixelDireitaInferior;
-//                 coodernadaX++;
-//             }
-//             else if (menorCusto.energia > pixelEsquerdaInferior.energia)
-//             {
-//                 menorCusto = pixelEsquerdaInferior;
-//                 coodernadaX--;
-//             }
-
-//             menorCusto.energiaAcumulada = menorCusto.energia + ptr[coodernadaY][coodernadaX].energiaAcumulada;
-
-//             atual = menorCusto;
-//             coodernadaY++;
-//         }
-//     }
-// }
+        energiasAcumuladas[x] = energiaAcumulada;
+    }
+}
 
 void energia(long *energias)
 {
@@ -263,7 +201,15 @@ void seamcarve(int targetWidth)
     }
 
     energia(energias);
-    // energiaAcumulada();
+    
+    long energiasAcumuladas[source->width];
+
+    for (int i = 0; i < source->width; i++)
+    {
+        energiasAcumuladas[i] = 0;
+    }
+
+    energiaAcumulada(energias, energiasAcumuladas);
 
     RGB8(*ptr)
     [target->width] = (RGB8(*)[target->width])target->img;
