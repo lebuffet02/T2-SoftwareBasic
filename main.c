@@ -41,6 +41,7 @@ void freemem();                  // limpa memória (caso tenha alocado dinamicam
 
 void energia(long *energias);
 void energiaAcumulada(long *energias, long *energiasAcumuladas);
+void removeColuna(long *energias, long *energiasAcumuladas);
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -86,26 +87,26 @@ void load(char *name, Img *pic)
 void energiaAcumulada(long *energias, long *energiasAcumuladas)
 {
     long(*ptrEnergias)
-        [source->width] = (long(*)[source->width])energias;
+        [target->width] = (long(*)[target->width])energias;
 
-    for (int x = 0; x < source->width; x++)
+    for (int x = 0; x < target->width; x++)
     {
 
         int coordX = x;
         int energiaAcumulada = ptrEnergias[0][coordX];
 
-        for (int y = 0; y < source->height - 1; y++)
+        for (int y = 0; y < target->height - 1; y++)
         {
             int coordXAux = coordX;
             long menorCusto = ptrEnergias[y + 1][coordX];
 
-            if (x > 0 && ptrEnergias[y + 1][coordX - 1] < menorCusto)
+            if (coordX > 0 && ptrEnergias[y + 1][coordX - 1] < menorCusto)
             {
                 menorCusto = ptrEnergias[y + 1][coordX - 1];
                 coordXAux = coordX - 1;
             }
 
-            if (x < source->width - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
+            if (coordX < target->width - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
             {
                 menorCusto = ptrEnergias[y + 1][coordX + 1];
                 coordXAux = coordX + 1;
@@ -122,20 +123,20 @@ void energiaAcumulada(long *energias, long *energiasAcumuladas)
 void energia(long *energias)
 {
     RGB8(*ptr)
-    [source->width] = (RGB8(*)[source->width])source->img;
+    [target->width] = (RGB8(*)[target->width])target->img;
 
-    for (int y = 0; y < source->height; y++)
+    for (int y = 0; y < target->height; y++)
     {
         int deltaX;
         int deltaY;
 
         boolean isBordaSuperior = y == 0;
-        boolean isBordaInferior = y == source->height - 1;
+        boolean isBordaInferior = y == target->height - 1;
 
-        for (int x = 0; x < source->width; x++)
+        for (int x = 0; x < target->width; x++)
         {
             boolean isBordaEsquerda = x == 0;
-            boolean isBordaDireita = x == source->width - 1;
+            boolean isBordaDireita = x == target->width - 1;
 
             if (isBordaEsquerda)
             {
@@ -185,41 +186,107 @@ void energia(long *energias)
                 deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
             }
 
-            energias[y * source->width + x] = deltaX + deltaY;
+            energias[y * target->width + x] = deltaX + deltaY;
         }
+    }
+}
+
+void removeColuna(long *energias, long *energiasAcumuladas)
+{
+    int minIndex = 0;
+    long(*ptrEnergias)
+        [target->width] = (long(*)[target->width])energias;
+
+    RGB8(*ptrPixels)
+    [target->width] = (RGB8(*)[target->width])target->img;
+
+    for (int i = 1; i < target->width; i++)
+    {
+        if (energiasAcumuladas[i] < energiasAcumuladas[minIndex])
+        {
+            minIndex = i;
+        }
+    }
+
+    int coordX = minIndex;
+    int energiaAcumulada = ptrEnergias[0][coordX];
+
+    for (int y = 0; y < target->height; y++)
+    {
+
+        //remove pixel e move outros para a esquerda
+        for (int x = coordX; x < target->width; x++)
+        {
+            if (x + 1 < target->width)
+            {
+                ptrPixels[y][x] = ptrPixels[y][x + 1];
+            }
+        }
+
+        //descobre a coordenada X do próximo pixel a ser removido
+        int coordXAux = coordX;
+        long menorCusto = ptrEnergias[y + 1][coordX];
+
+        if (coordX > 0 && ptrEnergias[y + 1][coordX - 1] < menorCusto)
+        {
+            menorCusto = ptrEnergias[y + 1][coordX - 1];
+            coordXAux = coordX - 1;
+        }
+
+        if (coordX < target->width - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
+        {
+            menorCusto = ptrEnergias[y + 1][coordX + 1];
+            coordXAux = coordX + 1;
+        }
+
+        coordX = coordXAux;
     }
 }
 
 void seamcarve(int targetWidth)
 {
     // Aplica o algoritmo e gera a saida em target->img...
-    long energias[source->height * source->width];
 
-    for (int i = 0; i < source->height * source->width; i++)
-    {
-        energias[i] = 0;
+    target->height = source->height;
+    target->width = source->width;
+
+    for(int i = 0; i < source->width * source->height; i++) {
+        target->img[i] = source->img[i];
     }
-
-    energia(energias);
     
-    long energiasAcumuladas[source->width];
+    int diff = abs(target->width - targetWidth);
 
-    for (int i = 0; i < source->width; i++)
+    for (int i = 0; i < diff; i++)
     {
-        energiasAcumuladas[i] = 0;
-    }
+        long energias[target->height * target->width];
 
-    energiaAcumulada(energias, energiasAcumuladas);
+        for (int i = 0; i < target->height * target->width; i++)
+        {
+            energias[i] = 0;
+        }
+
+        energia(energias);
+
+        long energiasAcumuladas[target->width];
+
+        for (int i = 0; i < target->width; i++)
+        {
+            energiasAcumuladas[i] = 0;
+        }
+
+        energiaAcumulada(energias, energiasAcumuladas);
+        removeColuna(energias, energiasAcumuladas);
+    }
 
     RGB8(*ptr)
     [target->width] = (RGB8(*)[target->width])target->img;
 
     for (int y = 0; y < target->height; y++)
     {
-        for (int x = 0; x < targetW; x++)
-            ptr[y][x].r = ptr[y][x].g = 255;
-        for (int x = targetW; x < target->width; x++)
-            ptr[y][x].r = ptr[y][x].g = 0;
+        // for (int x = 0; x < targetWidth; x++)
+            // ptr[y][x].r = ptr[y][x].g = 255;
+        for (int x = targetWidth; x < target->width; x++)
+            ptr[y][x].r = ptr[y][x].g = ptr[y][x].b = 0;
     }
     // Chame uploadTexture a cada vez que mudar
     // a imagem (pic[2])
