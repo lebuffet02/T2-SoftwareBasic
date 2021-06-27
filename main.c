@@ -39,9 +39,9 @@ void uploadTexture();
 void seamcarve(int targetWidth); // executa o algoritmo
 void freemem();                  // limpa memória (caso tenha alocado dinamicamente)
 
-void energia(long *energias);
-void energiaAcumulada(long *energias, long *energiasAcumuladas);
-void removeColuna(long *energias, long *energiasAcumuladas);
+void energia(long *energias, int larguraConsiderada);
+void energiaAcumulada(long *energias, long *energiasAcumuladas, int larguraConsiderada);
+void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsiderada);
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -84,12 +84,12 @@ void load(char *name, Img *pic)
     printf("Load: %d x %d x %d\n", pic->width, pic->height, chan);
 }
 
-void energiaAcumulada(long *energias, long *energiasAcumuladas)
+void energiaAcumulada(long *energias, long *energiasAcumuladas, int larguraConsiderada)
 {
     long(*ptrEnergias)
-        [target->width] = (long(*)[target->width])energias;
+        [larguraConsiderada] = (long(*)[larguraConsiderada])energias;
 
-    for (int x = 0; x < target->width; x++)
+    for (int x = 0; x < larguraConsiderada; x++)
     {
 
         int coordX = x;
@@ -106,7 +106,7 @@ void energiaAcumulada(long *energias, long *energiasAcumuladas)
                 coordXAux = coordX - 1;
             }
 
-            if (coordX < target->width - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
+            if (coordX < larguraConsiderada - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
             {
                 menorCusto = ptrEnergias[y + 1][coordX + 1];
                 coordXAux = coordX + 1;
@@ -120,7 +120,7 @@ void energiaAcumulada(long *energias, long *energiasAcumuladas)
     }
 }
 
-void energia(long *energias)
+void energia(long *energias, int larguraConsiderada)
 {
     RGB8(*ptr)
     [target->width] = (RGB8(*)[target->width])target->img;
@@ -133,10 +133,10 @@ void energia(long *energias)
         boolean isBordaSuperior = y == 0;
         boolean isBordaInferior = y == target->height - 1;
 
-        for (int x = 0; x < target->width; x++)
+        for (int x = 0; x < larguraConsiderada; x++)
         {
             boolean isBordaEsquerda = x == 0;
-            boolean isBordaDireita = x == target->width - 1;
+            boolean isBordaDireita = x == larguraConsiderada - 1;
 
             if (isBordaEsquerda)
             {
@@ -186,12 +186,12 @@ void energia(long *energias)
                 deltaY = pow(deltaRy, 2) + pow(deltaGy, 2) + pow(deltaBy, 2);
             }
 
-            energias[y * target->width + x] = deltaX + deltaY;
+            energias[y * larguraConsiderada + x] = deltaX + deltaY;
         }
     }
 }
 
-void removeColuna(long *energias, long *energiasAcumuladas)
+void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsiderada)
 {
     int minIndex = 0;
     long(*ptrEnergias)
@@ -200,7 +200,7 @@ void removeColuna(long *energias, long *energiasAcumuladas)
     RGB8(*ptrPixels)
     [target->width] = (RGB8(*)[target->width])target->img;
 
-    for (int i = 1; i < target->width; i++)
+    for (int i = 1; i < larguraConsiderada; i++)
     {
         if (energiasAcumuladas[i] < energiasAcumuladas[minIndex])
         {
@@ -215,31 +215,35 @@ void removeColuna(long *energias, long *energiasAcumuladas)
     {
 
         //remove pixel e move outros para a esquerda
-        for (int x = coordX; x < target->width; x++)
+        for (int x = coordX; x < larguraConsiderada; x++)
         {
-            if (x + 1 < target->width)
+            if (x + 1 < larguraConsiderada)
             {
                 ptrPixels[y][x] = ptrPixels[y][x + 1];
             }
         }
 
         //descobre a coordenada X do próximo pixel a ser removido
-        int coordXAux = coordX;
-        long menorCusto = ptrEnergias[y + 1][coordX];
 
-        if (coordX > 0 && ptrEnergias[y + 1][coordX - 1] < menorCusto)
+        if (y + 1 < target->height)
         {
-            menorCusto = ptrEnergias[y + 1][coordX - 1];
-            coordXAux = coordX - 1;
-        }
+            int coordXAux = coordX;
+            long menorCusto = ptrEnergias[y + 1][coordX];
 
-        if (coordX < target->width - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
-        {
-            menorCusto = ptrEnergias[y + 1][coordX + 1];
-            coordXAux = coordX + 1;
-        }
+            if (coordX > 0 && ptrEnergias[y + 1][coordX - 1] < menorCusto)
+            {
+                menorCusto = ptrEnergias[y + 1][coordX - 1];
+                coordXAux = coordX - 1;
+            }
 
-        coordX = coordXAux;
+            if (coordX < larguraConsiderada - 1 && ptrEnergias[y + 1][coordX + 1] < menorCusto)
+            {
+                menorCusto = ptrEnergias[y + 1][coordX + 1];
+                coordXAux = coordX + 1;
+            }
+
+            coordX = coordXAux;
+        }
     }
 }
 
@@ -250,32 +254,34 @@ void seamcarve(int targetWidth)
     target->height = source->height;
     target->width = source->width;
 
-    for(int i = 0; i < source->width * source->height; i++) {
+    for (int i = 0; i < source->width * source->height; i++)
+    {
         target->img[i] = source->img[i];
     }
-    
+
     int diff = abs(target->width - targetWidth);
 
     for (int i = 0; i < diff; i++)
     {
+        int larguraConsiderada = target->width - i;
         long energias[target->height * target->width];
 
-        for (int i = 0; i < target->height * target->width; i++)
+        for (int j = 0; j < target->height * target->width; j++)
         {
-            energias[i] = 0;
+            energias[j] = 0;
         }
 
-        energia(energias);
+        energia(energias, larguraConsiderada);
 
         long energiasAcumuladas[target->width];
 
-        for (int i = 0; i < target->width; i++)
+        for (int j = 0; j < larguraConsiderada; j++)
         {
-            energiasAcumuladas[i] = 0;
+            energiasAcumuladas[j] = 0;
         }
 
-        energiaAcumulada(energias, energiasAcumuladas);
-        removeColuna(energias, energiasAcumuladas);
+        energiaAcumulada(energias, energiasAcumuladas, larguraConsiderada);
+        removeColuna(energias, energiasAcumuladas, larguraConsiderada);
     }
 
     RGB8(*ptr)
@@ -284,9 +290,9 @@ void seamcarve(int targetWidth)
     for (int y = 0; y < target->height; y++)
     {
         // for (int x = 0; x < targetWidth; x++)
-            // ptr[y][x].r = ptr[y][x].g = 255;
+        // ptr[y][x].r = ptr[y][x].g = 255;
         for (int x = targetWidth; x < target->width; x++)
-            ptr[y][x].r = ptr[y][x].g = ptr[y][x].b = 0;
+            ptr[y][x].r = ptr[y][x].g = 0;
     }
     // Chame uploadTexture a cada vez que mudar
     // a imagem (pic[2])
