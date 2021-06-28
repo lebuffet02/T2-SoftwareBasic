@@ -42,6 +42,7 @@ void freemem();                  // limpa memória (caso tenha alocado dinamicam
 void energia(long *energias, int larguraConsiderada);
 void energiaAcumulada(long *energias, long *energiasAcumuladas, int larguraConsiderada);
 void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsiderada);
+void calculaMask (long *energias);
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -247,6 +248,30 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
     }
 }
 
+void calculaMask (long *energias) {
+
+        long(*ptrEnergias)
+            [target->width] = (long(*)[target->width])energias;
+
+        RGB8(*ptrPixels)
+        [mask->width] = (RGB8(*)[mask->width])mask->img;
+        
+        for(int y = 0; y < mask->height; y++) {
+
+            for(int x = 0; x < mask->width; x++) {
+
+                if(ptrPixels[y][x].r > 50) {
+// não está lendo o valor negativo
+                    ptrEnergias[y][x] = (signed long) -99999;
+                }
+                else if(ptrPixels[y][x].g > 200) {
+
+                    ptrEnergias[y][x] = (long) 999999;
+                } 
+        }
+    }
+}
+
 void seamcarve(int targetWidth)
 {
     // Aplica o algoritmo e gera a saida em target->img...
@@ -280,6 +305,7 @@ void seamcarve(int targetWidth)
             energiasAcumuladas[j] = 0;
         }
 
+        calculaMask(energias);
         energiaAcumulada(energias, energiasAcumuladas, larguraConsiderada);
         removeColuna(energias, energiasAcumuladas, larguraConsiderada);
     }
