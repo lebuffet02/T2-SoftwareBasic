@@ -90,13 +90,13 @@ void energiaAcumulada(long *energias, long *energiasAcumuladas, int larguraConsi
     long(*ptrEnergias)
         [larguraConsiderada] = (long(*)[larguraConsiderada])energias;
 
-    for (int x = 0; x < larguraConsiderada; x++)
+    for (int x = 1; x < larguraConsiderada-1; x++)
     {
 
         int coordX = x;
         int energiaAcumulada = ptrEnergias[0][coordX];
 
-        for (int y = 0; y < target->height - 1; y++)
+        for (int y = 1; y < target->height - 2; y++)
         {
             int coordXAux = coordX;
             long menorCusto = ptrEnergias[y + 1][coordX];
@@ -126,7 +126,7 @@ void energia(long *energias, int larguraConsiderada)
     RGB8(*ptr)
     [target->width] = (RGB8(*)[target->width])target->img;
 
-    for (int y = 0; y < target->height; y++)
+    for (int y = 1; y < target->height-1; y++)
     {
         int deltaX;
         int deltaY;
@@ -134,7 +134,7 @@ void energia(long *energias, int larguraConsiderada)
         boolean isBordaSuperior = y == 0;
         boolean isBordaInferior = y == target->height - 1;
 
-        for (int x = 0; x < larguraConsiderada; x++)
+        for (int x = 1; x < larguraConsiderada -1; x++)
         {
             boolean isBordaEsquerda = x == 0;
             boolean isBordaDireita = x == larguraConsiderada - 1;
@@ -221,6 +221,7 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
             if (x + 1 < larguraConsiderada)
             {
                 ptrPixels[y][x] = ptrPixels[y][x + 1];
+                //remove mask copiada
             }
         }
 
@@ -248,6 +249,30 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
     }
 }
 
+/*void calculaMask (long *energias) {
+
+        long(*ptrEnergias)
+            [target->width] = (long(*)[target->width])energias;
+
+        RGB8(*ptrPixels)
+        [mask->width] = (RGB8(*)[mask->width])mask->img;
+        
+        for(int y = 0; y < mask->height; y++) {
+
+            for(int x = 0; x < mask->width; x++) {
+
+                if(ptrPixels[y][x].r > 200 && ptrPixels[y][x].g < 50 && ptrPixels[y][x].b < 50) {
+
+                    ptrEnergias[y][x] = (signed long) -999999999;
+                }
+                else if(ptrPixels[y][x].r < 50 && ptrPixels[y][x].g > 200 && ptrPixels[y][x].b < 50) {
+
+                    ptrEnergias[y][x] = (signed long) 999999999;
+                } 
+        }
+    }
+}*/
+
 void calculaMask (long *energias) {
 
         long(*ptrEnergias)
@@ -260,14 +285,6 @@ void calculaMask (long *energias) {
 
             for(int x = 0; x < mask->width; x++) {
 
-                if(ptrPixels[y][x].r > 50) {
-// não está lendo o valor negativo
-                    ptrEnergias[y][x] = (signed long) -99999;
-                }
-                else if(ptrPixels[y][x].g > 200) {
-
-                    ptrEnergias[y][x] = (long) 999999;
-                } 
         }
     }
 }
