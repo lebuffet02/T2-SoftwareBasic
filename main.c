@@ -224,8 +224,8 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
             if (x + 1 < larguraConsiderada)
             {
                 ptrPixels[y][x] = ptrPixels[y][x + 1];
-                ptrMaskCopy[y][x] = ptrMaskCopy[y][x + 1];
                 //remove mask copiada
+                ptrMaskCopy[y][x] = ptrMaskCopy[y][x + 1];
             }
         }
 
