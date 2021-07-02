@@ -41,8 +41,8 @@ void freemem();                  // limpa memória (caso tenha alocado dinamicam
 
 void energia(long *energias, int larguraConsiderada);
 void energiaAcumulada(long *energias, long *energiasAcumuladas, int larguraConsiderada);
-void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsiderada);
-void calculaMask (long *energias);
+void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsiderada, Img *maskCopy);
+void calculaMask(long *energias);
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -90,7 +90,7 @@ void energiaAcumulada(long *energias, long *energiasAcumuladas, int larguraConsi
     long(*ptrEnergias)
         [larguraConsiderada] = (long(*)[larguraConsiderada])energias;
 
-    for (int x = 1; x < larguraConsiderada-1; x++)
+    for (int x = 1; x < larguraConsiderada - 1; x++)
     {
 
         int coordX = x;
@@ -126,7 +126,7 @@ void energia(long *energias, int larguraConsiderada)
     RGB8(*ptr)
     [target->width] = (RGB8(*)[target->width])target->img;
 
-    for (int y = 1; y < target->height-1; y++)
+    for (int y = 1; y < target->height - 1; y++)
     {
         int deltaX;
         int deltaY;
@@ -134,7 +134,7 @@ void energia(long *energias, int larguraConsiderada)
         boolean isBordaSuperior = y == 0;
         boolean isBordaInferior = y == target->height - 1;
 
-        for (int x = 1; x < larguraConsiderada -1; x++)
+        for (int x = 1; x < larguraConsiderada - 1; x++)
         {
             boolean isBordaEsquerda = x == 0;
             boolean isBordaDireita = x == larguraConsiderada - 1;
@@ -192,7 +192,7 @@ void energia(long *energias, int larguraConsiderada)
     }
 }
 
-void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsiderada)
+void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsiderada, Img *maskCopy)
 {
     int minIndex = 0;
     long(*ptrEnergias)
@@ -200,6 +200,9 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
 
     RGB8(*ptrPixels)
     [target->width] = (RGB8(*)[target->width])target->img;
+
+    RGB8(*ptrMaskCopy)
+    [maskCopy->width] = (RGB8(*)[maskCopy->width])maskCopy->img;
 
     for (int i = 1; i < larguraConsiderada; i++)
     {
@@ -221,6 +224,7 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
             if (x + 1 < larguraConsiderada)
             {
                 ptrPixels[y][x] = ptrPixels[y][x + 1];
+                ptrMaskCopy[y][x] = ptrMaskCopy[y][x + 1];
                 //remove mask copiada
             }
         }
@@ -249,7 +253,7 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
     }
 }
 
-/*void calculaMask (long *energias) {
+void calculaMask (long *energias) {
 
         long(*ptrEnergias)
             [target->width] = (long(*)[target->width])energias;
@@ -263,28 +267,12 @@ void removeColuna(long *energias, long *energiasAcumuladas, int larguraConsidera
 
                 if(ptrPixels[y][x].r > 200 && ptrPixels[y][x].g < 50 && ptrPixels[y][x].b < 50) {
 
-                    ptrEnergias[y][x] = (signed long) -999999999;
+                    ptrEnergias[y][x] = 0;
                 }
                 else if(ptrPixels[y][x].r < 50 && ptrPixels[y][x].g > 200 && ptrPixels[y][x].b < 50) {
 
-                    ptrEnergias[y][x] = (signed long) 999999999;
+                    ptrEnergias[y][x] = (signed long) 999999;
                 } 
-        }
-    }
-}*/
-
-void calculaMask (long *energias) {
-
-        long(*ptrEnergias)
-            [target->width] = (long(*)[target->width])energias;
-
-        RGB8(*ptrPixels)
-        [mask->width] = (RGB8(*)[mask->width])mask->img;
-        
-        for(int y = 0; y < mask->height; y++) {
-
-            for(int x = 0; x < mask->width; x++) {
-
         }
     }
 }
@@ -296,9 +284,16 @@ void seamcarve(int targetWidth)
     target->height = source->height;
     target->width = source->width;
 
+    Img maskCopyStruct;
+    RGB8 img[mask->height * mask->width];
+    maskCopyStruct = (Img) {.height = mask->height, .width = mask->width, .img = img};
+
+    Img *maskCopy = &maskCopyStruct;
+
     for (int i = 0; i < source->width * source->height; i++)
     {
         target->img[i] = source->img[i];
+        maskCopy->img[i] = mask->img[i];
     }
 
     int diff = abs(target->width - targetWidth);
@@ -324,7 +319,7 @@ void seamcarve(int targetWidth)
 
         calculaMask(energias);
         energiaAcumulada(energias, energiasAcumuladas, larguraConsiderada);
-        removeColuna(energias, energiasAcumuladas, larguraConsiderada);
+        removeColuna(energias, energiasAcumuladas, larguraConsiderada, maskCopy);
     }
 
     RGB8(*ptr)
